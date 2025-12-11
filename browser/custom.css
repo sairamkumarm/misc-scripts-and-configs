@@ -1,0 +1,17 @@
+.tab-position .tab.active .tab-header .favicon {
+    filter: none !important;
+}
+
+
+button.vivaldi {
+      width: 24px !important;    /* width of vivaldi button adjust per your need */ 
+      height: 24px !important;   /* height of vivaldi button adjust per your need */ 
+}
+
+.window-buttongroup button {
+    width: 24px !important;    /* width of each buttons adjust per your need */ 
+    height: 24px !important;   /* height of each buttons adjust per your need */ 
+    padding: 0 !important;
+    margin: 0 2px !important;  /* gap between each buttons if you want */ 
+    font-size: 14px !important; /* icon size of buttons */ 
+}
