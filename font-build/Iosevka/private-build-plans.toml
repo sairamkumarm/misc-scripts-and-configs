@@ -1,0 +1,57 @@
+[buildPlans.IosevkaSr21]
+family = "Iosevka SR21"
+spacing = "normal"
+serifs = "sans"
+noCvSs = true
+exportGlyphNames = false
+
+[buildPlans.IosevkaSr21.variants.design]
+seven = "straight-serifless-crossbar"
+eight = "crossing-asymmetric"
+nine = "straight-bar"
+zero = "slashed"
+capital-a = "round-top-serifless"
+capital-c = "serifless"
+capital-g = "toothless-corner-serifless-hooked"
+capital-j = "serifed"
+capital-q = "crossing-baseline"
+capital-r = "straight-serifless"
+capital-s = "serifless"
+capital-w = "straight-vertical-sides-serifless"
+capital-z = "straight-serifless-with-horizontal-crossbar"
+f = "flat-hook-tailed"
+g = "double-storey-open"
+i = "serifed"
+m = "earless-rounded-double-arch-serifless"
+t = "bent-hook"
+w = "straight-vertical-sides-serifless"
+lower-theta = "oval"
+lower-pi = "tailed"
+lower-psi = "serifless"
+cyrl-capital-ya = "standing-serifless"
+diacritic-dot = "square"
+punctuation-dot = "round"
+braille-dot = "square"
+asterisk = "hex-low"
+underscore = "above-baseline"
+caret = "medium"
+paren = "flat-arc"
+guillemet = "straight"
+number-sign = "upright"
+ampersand = "upper-open"
+dollar = "interrupted"
+bar = "natural-slope"
+question = "corner-flat-hooked"
+decorative-angle-brackets = "tall"
+lig-ltgteq = "slanted"
+lig-equal-chain = "without-notch"
+lig-hyphen-chain = "without-notch"
+
+  [buildPlans.IosevkaSr21.ligations]
+  inherits = "dlig"
+
+[buildPlans.IosevkaSr21.slopes.Upright]
+angle = 0
+shape = "upright"
+menu = "upright"
+css = "normal"
