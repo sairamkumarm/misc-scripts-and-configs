@@ -1,0 +1,355 @@
+// ==PREPROCESSOR==
+// @name "Track Info + Seekbar + Buttons + Volume"
+// @author "marc2003"
+// @import "lodash"
+// @import "%fb2k_component_path%helpers.txt"
+// @import "%fb2k_component_path%samples\js\common.js"
+// @import "%fb2k_component_path%samples\js\panel.js"
+// @import "%fb2k_component_path%samples\js\seekbar.js"
+// @import "%fb2k_component_path%samples\js\volume.js"
+// ==/PREPROCESSOR==
+
+// $rgb is supported here
+// Sairamkumar M Mod
+var tfo = {
+	artist : fb.TitleFormat("%artist%"),
+	title : fb.TitleFormat("%title%"),
+	playback_time : fb.TitleFormat("[%playback_time%]"),
+	length : fb.TitleFormat("$if2(%length%,LIVE)"),
+};
+
+var colours = {
+	text : RGB(240, 240, 240),
+	background : RGB(0, 0, 0),
+	buttons : RGB(255, 255, 255),
+	slider_background : RGB(32, 32, 32),
+	contrast : RGB(255, 255, 255),
+};
+
+//////////////////////////////////////////////////////////////
+
+var panel = new _panel();
+var seekbar = new _seekbar(0, 0, 0, 0);
+var volume = new _volume(0, 0, 0, 0);
+var buttons = new _buttons();
+var img = null;
+var bs = _scale(20);
+var layout = {
+	padding: _scale(8),
+	top_padding: _scale(6),
+	row_gap: _scale(2),
+
+	title_h: _scale(18),
+	artist_h: _scale(18),
+	bar_h: _scale(6),
+	time_w: _scale(22),
+
+	content_left: 0,
+	content_right: 0,
+
+	title_y: 0,
+	artist_y: 0,
+	seekbar_y: 0,
+
+	right_block_x: 0,
+	right_block_w: 0
+};
+var right_block = {
+	buttons: 4,
+	button_gap: _scale(8),
+	width: function () {
+		return (bs * this.buttons) + this.button_gap + _scale(60);
+	}
+};
+var pbo_chars = [chars.repeat_off, chars.repeat_all, chars.repeat_one, chars.random, chars.shuffle, chars.album, chars.folder];
+var pbo_names = plman.GetPlaybackOrders().toArray();
+
+var normal_font = CreateFontString('Segoe UI', 9);
+var title_font = CreateFontString('Segoe UI', 12);
+
+window.MaxHeight = _scale(150);
+
+on_playback_new_track(fb.GetNowPlaying());
+
+buttons.update = function () {
+	var l = layout;
+
+	var y = l.artist_y + (l.artist_h - bs) / 2;
+	var x = l.right_block_x + volume.w + right_block.button_gap;
+
+	var pbo = plman.PlaybackOrder;
+
+
+	this.buttons.volume = new _button(
+		volume.x - bs - _scale(6),
+		y,
+		bs,
+		bs,
+		{ char: chars.volume, colour: colours.buttons },
+		null,
+		function () { fb.VolumeMute(); },
+		'Mute Volume'
+	);
+	
+	this.buttons.pbo = new _button(
+		x - 2, y - 2, bs + 4, bs + 4,
+		{ char: pbo_chars[pbo], colour: pbo === 0 ? setAlpha(colours.buttons, 60) : colours.contrast },
+		null,
+		function () {
+			plman.PlaybackOrder = (pbo + 1) % pbo_chars.length;
+		},
+		'Playback Order: ' + pbo_names[pbo]
+	);
+
+	this.buttons.console = new _button(
+		x + bs * 1, y, bs, bs,
+		{ char: chars.list, colour: colours.buttons },
+		null,
+		function () { fb.ShowConsole(); },
+		'Console'
+	);
+
+	this.buttons.search = new _button(
+		x + bs * 2, y, bs, bs,
+		{ char: chars.search, colour: colours.buttons },
+		null,
+		function () { fb.RunMainMenuCommand('Library/Search'); },
+		'Library Search'
+	);
+
+	this.buttons.preferences = new _button(
+		x + bs * 3, y, bs, bs,
+		{ char: chars.preferences, colour: colours.buttons },
+		null,
+		function () { fb.ShowPreferences(); },
+		'Preferences'
+	);
+
+
+};
+
+
+function update_album_art(metadb) {
+	if (img) {
+		img.Dispose();
+		img = null;
+	}
+
+	if (metadb) {
+		img = metadb.GetAlbumArt();
+	}
+
+	window.Repaint();
+}
+
+function on_mouse_lbtn_down(x, y) {
+	seekbar.lbtn_down(x, y);
+	volume.lbtn_down(x, y);
+}
+
+function on_mouse_lbtn_up(x, y) {
+	if (x < panel.h && fb.IsPlaying && img) {
+		fb.GetNowPlaying().ShowAlbumArtViewer();
+		return;
+	}
+
+	if (buttons.lbtn_up(x, y))
+		return;
+
+	if (seekbar.lbtn_up(x, y))
+		return;
+
+	if (volume.lbtn_up(x, y))
+		return;
+
+	fb.RunMainMenuCommand('View/Show now playing in playlist');
+}
+
+function on_mouse_leave() {
+	buttons.leave();
+}
+
+function on_mouse_move(x, y) {
+	window.SetCursor(x < panel.h && fb.IsPlaying && img ? IDC_HAND : IDC_ARROW);
+
+	if (buttons.move(x, y))
+		return;
+
+	if (seekbar.move(x, y))
+		return;
+
+	volume.move(x, y);
+}
+
+function on_mouse_rbtn_up(x, y) {
+	return panel.rbtn_up(x, y);
+}
+
+function on_mouse_wheel(s) {
+	if (seekbar.wheel(s))
+		return;
+
+	volume.wheel(s);
+}
+
+function on_paint(gr) {
+	gr.Clear(colours.background);
+	gr.FillRoundedRectangle(seekbar.x, seekbar.y, seekbar.w, seekbar.h, _scale(0), _scale(0), colours.slider_background);
+	buttons.paint(gr);
+
+	gr.FillRoundedRectangle(volume.x, volume.y, volume.w, volume.h, _scale(0), _scale(0), colours.slider_background)
+	gr.FillRectangle(volume.x + volume.pos() - _scale(2), volume.y-_scale(2), _scale(4), _scale(10), colours.contrast);
+	buttons.paint(gr);
+
+	if (fb.IsPlaying) {
+		if (img) {
+			_drawImage(gr, img, 0, 0, panel.h, panel.h, image.crop_top);
+		}
+		var text_x = layout.content_left;
+		var text_w = panel.w - text_x;
+
+		gr.WriteText(
+			tfo.title.Eval(),
+			title_font,
+			colours.text,
+			text_x,
+			layout.title_y,
+			text_w,
+			layout.title_h,
+			DWRITE_TEXT_ALIGNMENT_LEADING,
+			DWRITE_PARAGRAPH_ALIGNMENT_CENTER,
+			DWRITE_WORD_WRAPPING_NO_WRAP,
+			DWRITE_TRIMMING_GRANULARITY_CHARACTER
+		);
+
+		gr.WriteText(
+			tfo.artist.Eval(),
+			normal_font,
+			colours.text,
+			text_x,
+			layout.artist_y,
+			text_w,
+			layout.artist_h,
+			DWRITE_TEXT_ALIGNMENT_LEADING,
+			DWRITE_PARAGRAPH_ALIGNMENT_CENTER,
+			DWRITE_WORD_WRAPPING_NO_WRAP,
+			DWRITE_TRIMMING_GRANULARITY_CHARACTER
+		);
+
+		gr.WriteText(
+			tfo.playback_time.Eval(),
+			normal_font,
+			colours.text,
+			seekbar.x - _scale(60),
+			seekbar.y - _scale(7.5),
+			_scale(54),
+			_scale(20),
+			DWRITE_TEXT_ALIGNMENT_TRAILING,
+			DWRITE_PARAGRAPH_ALIGNMENT_CENTER
+		);
+
+		gr.WriteText(
+			tfo.length.Eval(),
+			normal_font,
+			colours.text,
+			seekbar.x + seekbar.w + _scale(6),
+			seekbar.y - _scale(7.5),
+			_scale(54),
+			_scale(20),
+			DWRITE_TEXT_ALIGNMENT_LEADING,
+			DWRITE_PARAGRAPH_ALIGNMENT_CENTER
+		);
+		if (fb.PlaybackLength > 0) {
+			gr.FillRectangle(seekbar.x + seekbar.pos(), seekbar.y - _scale(2), _scale(2), _scale(10), colours.contrast);
+		}
+	}
+}
+
+function on_playback_dynamic_info_track(type) {
+	if (type == 0)
+		window.Repaint();
+	else
+		update_album_art(fb.GetNowPlaying());
+}
+
+function on_playback_edited() {
+	window.Repaint();
+}
+
+function on_playback_new_track(metadb) {
+	update_album_art(metadb);
+}
+
+function on_playback_order_changed() {
+	buttons.update();
+	window.Repaint();
+}
+
+function on_playback_pause() {
+	buttons.update();
+	window.Repaint();
+}
+
+function on_playback_seek() {
+	seekbar.playback_seek();
+}
+
+function on_playback_starting() {
+	buttons.update();
+	window.Repaint();
+}
+
+function on_playback_stop() {
+	buttons.update();
+	window.Repaint();
+}
+
+function on_playback_time() {
+	window.RepaintRect(panel.h, 0, seekbar.x - panel.h, panel.h);
+}
+
+function on_playlist_stop_after_current_changed() {
+	buttons.update();
+	window.Repaint();
+}
+
+function on_size() {
+	panel.size();
+
+	var l = layout;
+	var padding = l.padding;
+
+	// album art
+	var art_w = (fb.IsPlaying && img) ? panel.h : 0;
+
+	// horizontal bounds
+	l.content_left  = art_w + padding;
+	l.right_block_w = right_block.width();
+	l.content_right = panel.w - l.right_block_w - (padding*1);
+	l.right_block_x = l.content_right;
+
+	// vertical rows
+	l.title_y   = l.top_padding;
+	l.artist_y  = l.title_y + l.title_h + l.row_gap;
+	l.seekbar_y = l.artist_y + l.artist_h + l.row_gap + _scale(4);
+
+	// seekbar
+	seekbar.x = l.padding + l.time_w;
+	seekbar.y = l.seekbar_y;
+	seekbar.w = panel.w - (l.padding * 2) - (l.time_w * 2);
+	seekbar.h = l.bar_h;
+
+	// volume (artist row, left of buttons)
+	volume.w = l.right_block_w - (bs * right_block.buttons) - right_block.button_gap;
+	volume.h = l.bar_h;
+	volume.x = l.right_block_x;
+	volume.y = l.artist_y + (l.artist_h - volume.h) / 2;
+
+	buttons.update();
+}
+
+
+function on_volume_change() {
+	volume.volume_change();
+	window.Repaint();
+}
