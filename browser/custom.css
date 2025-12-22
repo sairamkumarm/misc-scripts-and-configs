@@ -2,16 +2,56 @@
     filter: none !important;
 }
 
-
 button.vivaldi {
-      width: 24px !important;    /* width of vivaldi button adjust per your need */ 
-      height: 24px !important;   /* height of vivaldi button adjust per your need */ 
+    width: 26px !important;
+    /* width of vivaldi button adjust per your need */
+    height: 26px !important;
+    /* height of vivaldi button adjust per your need */
+    margin-top: 1px;
+    color: var(--colorFg);
 }
 
 .window-buttongroup button {
-    width: 24px !important;    /* width of each buttons adjust per your need */ 
-    height: 24px !important;   /* height of each buttons adjust per your need */ 
+    width: 24px !important;
+    /* width of each buttons adjust per your need */
+    height: 24px !important;
+    /* height of each buttons adjust per your need */
     padding: 0 !important;
-    margin: 0 2px !important;  /* gap between each buttons if you want */ 
-    font-size: 14px !important; /* icon size of buttons */ 
+    margin: 0 2px !important;
+    /* gap between each buttons if you want */
+    font-size: 14px !important;
+    /* icon size of buttons */
+    color: var(--colorFg);
+}
+
+.tabs-top#browser.win:not(.fullscreen, .disable-titlebar) #header {
+    min-height: calc((25px + var(--densityGap) * 1) / var(--uiZoomLevel));
+}
+
+#tabs-tabbar-container.top {
+    flex-direction: column;
+    padding-top: 0px;
+}
+
+#header:has(#titlebar.tabless) #pagetitle {
+    max-height: 25px;
+}
+
+.color-behind-tabs-off:not(.is-settingspage)#browser:not(.tabs-top) #header {
+    background-color: var(--colorWindowBg);
+    
+}
+
+#browser.win:not(.fullscreen, .disable-titlebar) #header {
+    min-height: calc(25px / var(--uiZoomLevel));
+}
+
+#browser:not(.tabs-top) #titlebar .vivaldi {
+    scale: calc(1 / var(--uiZoomLevel));
+    margin-top: 5px;
+}
+
+#browser:not(.tabs-top) #titlebar #pagetitle {
+    color: var(--colorFg);
+    padding-top: 1px;
 }
